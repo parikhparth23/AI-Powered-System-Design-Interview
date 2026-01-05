@@ -58,7 +58,7 @@ cp .env.local.example .env.local
 ### 3. Install & Run
 
 ```bash
-npm install  # Already done, but run again if needed
+npm install
 npm run dev
 ```
 
