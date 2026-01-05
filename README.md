@@ -17,6 +17,11 @@ An interactive system design interview platform where users practice with curate
 ✓ **Real-time Scoring** - Scores vary based on design quality
 ✓ **Question Relevance Checking** - AI penalizes off-topic answers
 
+## Demo Video
+
+https://github.com/user-attachments/assets/ef01499a-d58a-4938-bd48-9a8e438c2993
+
+
 ## Questions Included
 
 1. Designing a URL Shortening Service like TinyURL
