@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { QuestionPanel } from './components/QuestionPanel';
 import { ResponseInput } from './components/ResponseInput';
 import { EvaluationPanel } from './components/EvaluationPanel';
+import HistoryPanel, { saveHistoryEntry } from './components/HistoryPanel';
 
 export interface Evaluation {
   score: number;
@@ -19,6 +20,7 @@ export default function Home() {
   const [drawingData, setDrawingData] = useState<string>('');
   const [drawingSceneData, setDrawingSceneData] = useState<any>(null);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const [activeTab, setActiveTab] = useState<'evaluation' | 'history'>('evaluation');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -118,6 +120,14 @@ export default function Home() {
 
       const data = await res.json();
       setEvaluation(data.evaluation);
+
+      // Save to server-side history (question, response, rating, optional drawing PNG)
+      try {
+        await saveHistoryEntry({ question, response, evaluation: data.evaluation, drawingData: pngDataUrl || null });
+      } catch (e) {
+        // non-fatal
+        console.error('Failed saving history', e);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to evaluate response';
       setError(message);
@@ -129,11 +139,20 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
       <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-white">System Design Interview</h1>
-          <p className="text-slate-400 mt-2">
-            Practice system design with AI-powered feedback and scoring
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">System Design Interview</h1>
+            <p className="text-slate-400 mt-2">Practice system design with AI-powered feedback and scoring</p>
+          </div>
+
+          <div className="pt-1">
+            <button
+              onClick={() => setActiveTab(activeTab === 'history' ? 'evaluation' : 'history')}
+              className="px-3 py-2 rounded bg-slate-700 text-white hover:bg-slate-600"
+            >
+              {activeTab === 'history' ? 'Close History' : 'History'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -161,12 +180,19 @@ export default function Home() {
             />
           </div>
 
-          {/* Right Column - Evaluation - Large */}
+          {/* Right Column - Evaluation / History - Large */}
           <div className="col-span-4 flex flex-col rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden shadow-xl">
-            <EvaluationPanel 
-              evaluation={evaluation}
-              isLoading={isLoading}
-            />
+            <div className="p-3 border-b border-slate-700 bg-slate-900/30">
+              <div className="text-sm text-slate-300">{activeTab === 'evaluation' ? 'Evaluation' : 'History'}</div>
+            </div>
+
+            <div className="flex-1 overflow-auto">
+              {activeTab === 'evaluation' ? (
+                <EvaluationPanel evaluation={evaluation} isLoading={isLoading} />
+              ) : (
+                <HistoryPanel />
+              )}
+            </div>
           </div>
         </div>
       </main>
